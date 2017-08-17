@@ -1,0 +1,335 @@
+The Broadcaster Project
+
+social notworking technologies
+-------------------------------------------------------------------------------
+? Howto: Youtube auto-upload script
+Brooklyn Public Library Broadcaster ?
+
+How to layer/remix videos with free command line tools
+
+This tutorial assumes you know a little bit about script files. All files have
+some editing that is required before executing and knowing a little bit about a
+couple parameters really expands what you can do with them. That said, it?s
+really not too hard and we?re happy to answer basic questions.
+
+Video Overview: (which you can definitely skip)
+
+INSTALL SOFTWARE:
+FFmpeg (OS X howto), video utility, format conversions, etc.
+Imagemagick:all kinds of image processing goodness. Like a command line version
+of GIMP or photoshop.
+Sox: Audio processing.
+
+We?ve used all of these programs on both Linux and Mac. Linux installs are
+pretty easy with package managers (apt-get, yum, etc). Mac is little more work
+for ffmpeg and imagemagick but not too tough.
+
+[Optional] VideoDownloadHelper: Firefox plugin that allows you to download
+easily from lots of video sharing sites in mp4 and flv format at a variety of
+resolutions. There are Linux command line downloaders as well but we haven?t
+tried that yet?
+
+GET SOME MOVIES Maybe you take them with your own camera, maybe you download
+from online. You?ve probably got a bunch floating around your hard drive
+already. Start with short ones. Feel free to grab some from http://youtube.com/
+brooklynmobile, or any other broadcaster, all are public domain.
+
+EXPORT MOVIES TO FRAMES
+mkdir frames
+ffmpeg -i yourvideoA.avi frames/A%4d.jpg
+ffmpeg -i yourvideoB.avi frames/B%4d.jpg
+This will export individual frames of the video to A0001.jpg, A0002.jpg, etc
+For longer videos you might need to use A%5d.jpg or A%6d.jpg but start with
+small videos first.
+
+DO SOMETHING TO THE FRAMES and RECOMPILE MOVIE
+This is where ImageMagick comes in handy. ImageMagick can do all kinds of image
+manipulations. We will give you a few examples.
+
+EXAMPLES:
+Blending two movies on top of one another. Copy the following code into a file
+called blurmachine.sh and make it executable[type chmod 755 blurmachine.sh at
+the command line].
+
+#!/bin/bash
+# boranj!
+counter=10000 # initialize counter
+for f in A*.jpg; do # step through frames
+let "counter+=1" # increment counter
+# apply some Imagemagick effects to the 2 images and write a new image
+composite -blend 50 A${counter:1}.jpg B${counter:1}.jpg -matte ./mixedFrame$
+{counter:1}.jpg
+done
+#Use FFMPEG to make frames into a movie again
+ffmpeg -r 30 -sameq -i mixedFrame%4d.jpg ../outputmovie$DATETIME.mp4
+
+Now you will have a movie with no sound that will look something like this:
+
+ADD AUDIO BACK TO THE MOVIES
+After using the above script file, you will have a movie with no sound. You can
+add the soundtrack of your choice, or add the mixed audio from the original
+movies.
+To extract audio from the original movies and sum it back together:
+
+# AUDIO EXTRACTION
+ffmpeg -i movA.mp4 movAsound.wav
+ffmpeg -i movB.mp4 movBsound.wav
+# AUDIO MIX
+sox -m movAsound.wav movBsound.wav mixed.mp3
+
+Add audio back to your movie:
+ffmpeg -i movNoSound.mp4 -sameq -i mixed.mp3 -ab 192k movSound.mp4
+
+OTHER IMAGE MANIPULATIONS
+
+Wavy overlay: Script file.
+
+and similar example with more slices.
+For this example, you need to create a mix image first. That is done with this
+line.
+convert -size 640x480 gradient: -evaluate sin 20 wave_gradient.png
+
+Place it in an appropriate location and make sure it?s correctly reference in
+your script file.
+This type of combination has all kinds of options. You can take this a lot of
+other places if you wish to dig deeper. See this forum post and this usage
+examples page.
+
+Four movie grid montage: Script File.
+
+Six panel version of same effect.
+
+Lots of other possibilities if you poke around Fred?s Imagemagick scripts as
+well.
+
+Let us know what you come up with.
+
+Advertisements
+
+Like this:
+
+Like Loading...
+
+Related
+
+Tags: blend, edit, ffmpeg, imagemagick, layer, remix, slice, software, sox
+
+This entry was posted on May 18, 2010 at 4:01 pm and is filed under linux, mac,
+Uncategorized. You can follow any responses to this entry through the RSS 2.0
+feed. You can leave a response, or trackback from your own site.
+
+12 Responses to ?How to layer/remix videos with free command line tools?
+
+ 1. [556] Command line video processing using FOSS - Hack a Day Says:
+    May 18, 2010 at 5:05 pm | Reply
+
+    [?] Paluska] is getting away from the point-and-click by editing videos
+    from the command line. Using the free open source software packages FFmpeg,
+    Imagemagick, and Sox he produces new clips [?]
+
+ 2. [33f] brice Says:
+    May 18, 2010 at 7:48 pm | Reply
+
+    I recently offered the same solution on superuser.com: http://superuser.com
+    /questions/107260. It turns out that you could probably do it easier with
+    Xuggler(www.xuggle.com) a FOSS java library to do those kind of
+    manipulation. It might be easier than having to do everything separately.
+
+ 3. [b11] t0ny Says:
+    May 19, 2010 at 9:08 pm | Reply
+
+    Neat idea. I got a few ideas what I would want to do with it!
+
+    I have not tested it but I think you don?t need to reecode the video when
+    you add the audio back in. You should try this.
+    ffmpeg -i movNoSound.mp4 -vcodec copy -i mixed.mp3 -ab 192k movSound.mp4
+
+ 4. links for 2010-05-20 Says:
+    May 20, 2010 at 8:02 am | Reply
+
+    [?] How to layer/remix videos with free command line tools ? The
+    Broadcaster Project These are some cool manipulations. I still have all
+    these Japan videos, maybe they could become something interesting. (tags:
+    video commandline linux osx processing ffmpeg imagemagick sox opensource)
+    This entry was posted in Links. Bookmark the permalink. Post a comment or
+    leave a trackback: Trackback URL. ? links for 2010-05-18 [?]
+
+ 5. [17c] holyduck Says:
+    May 26, 2010 at 10:51 am | Reply
+
+    protip: -sameq does not do what you might think it does
+    -sameq = same quantizer = only really applicable when encoding to and from
+    mpeg related formats.
+    and even then, it generally doesnt do what you want it to do.
+
+    using it to dump images doesnt do anything useful
+
+    also, ffmpeg should be able to dump .png images and read them
+    seeing as .png is lossless and jpg isnt, you should probably be using png
+    for maximum image quality
+
+    The best way to do open source commandline video editing is actually to
+    install avisynth in wine and do commands like
+    mkfifo temp.y4m
+    wine avs2yuv avisynthscript.avs temp.y4m & x264 ?crf 22 temp.y4m -o
+    fullfile.mp4
+
+    avisynth is open source, a lot more flexible and faster than the
+    imagemagick option.
+    quite a lot of avisynth plugins are open source, and since avisynth allows
+    both non linear and linear script based editing. its 100% commandline, and
+    100% open source, while being both faster and higher quality than the
+    method you outline
+
+      + [8e5] danielpaluska Says:
+        May 26, 2010 at 8:17 pm | Reply
+
+        cool. thanks. i will check out avisynth.
+
+        in regards to -sameq you are talking about the export to frames line,
+        right?
+        so just do this: ffmpeg -i yourmovie.avi frames%04d.png
+
+        but in terms of converting frames back into a movie, i have found that
+        -sameq definitely helps.
+        ffmpeg -i frames$04d.jpg -sameq movieout.mp4
+        looks noticeably better than
+        ffmpeg -i frames$04d.jpg movieout.mp4
+
+ 6. [3eb] snips and layers ? Plainfront.com/Dan Paluska Says:
+    July 17, 2010 at 4:30 am | Reply
+
+    [?] installs: http://plainfront.wordpress.com/2010/01/16/
+    experiments-with-timelapse-and-audio/ https://
+    broadcasterproject.wordpress.com/2010/05/18/
+    how-to-layerremix-videos-with-free-command-line-t? Leave a Comment Leave a
+    Comment so far Leave a comment RSS feed for comments on this post. [?]
+
+ 7. [d2e] yellow Says:
+    July 24, 2010 at 11:51 pm | Reply
+
+    Hi
+
+    Two more reasons why anyone reading this post should use AVISynth and not
+    FFMPEG to do your YCbCr to RGB conversion.
+
+    1. FFMPEG does a contrast expansion, stretching your video levels out from
+    16 ? 235 to 0 ? 255 RGB making your movie frames more contrasty than they
+    were recorded on your camera. To prevent this use ConvertToRGB with a
+    PC.601 or 709 colour matrix. Not Rec. As you are going back to video levels
+    at the end of the process.
+
+    2. AVISynth will give you about 50% more unique colours per frame compared
+    to FFmpegs?s YCcCr to RGB conversion. You?re reducing the quality of your
+    movie by doing the conversion in the first place and then doing it badly.
+
+ 8. [8e5] t he ans weri saque stion? Says:
+    August 5, 2011 at 2:44 pm | Reply
+
+    someone recently asked me for a little more detail on blur machine?
+
+    blur machine takes 2 sets of images A0001.jpg ? A1435.jpg (or whatever) and
+    B0001.jpg ? B1435.jpg and blends them together into C0001.jpg ? C1435.jpg.
+    where A, B and C can be whatever names you want.
+    the syntax that looks like {counter:1} is a way to take a number like
+    ?10021? and make it into ?0021?. this keeps the filenames correctly
+    numbered.
+
+    # apply some Imagemagick effects to the 2 images and write a new image
+    composite -blend 50 A${counter:1}.jpg B${counter:1}.jpg -matte ./
+    mixedFrame${counter:1}.jpg
+
+    in this line, we must be in the directory that contains the A and B images.
+    ?./? means the same directory we are currently in, so mixedframe0001.jpg
+    will also be written to the same directory.
+
+ 9. Public Media Systems Workshop, Tuesdays 7-9pm in November, Cambrij ? The
+    Broadcaster Project Says:
+    October 30, 2011 at 5:22 pm | Reply
+
+    [?] you can learn to make if you want: A videobooth, a public timelapse
+    server, command line video remixing, computer timelapse self surveillance,
+    youtube upload scripts, a public text box, and lots of good [?]
+
+10. [c8b] Arachnosoft - Maxime Abbey Says:
+    July 28, 2015 at 7:53 am | Reply
+
+    Thanks for this great, detailed tutorial.
+
+    I released several YouTube videos featuring video game MIDI files played
+    through a SoundFont synthesizer using my own Arachno SoundFont bank (http:/
+    /www.arachnosoft.com).
+
+    Two years ago, your tutorial came in handy when I recorded this one,
+    covering music from Lemmings: https://www.youtube.com/watch?v=Aa4uHbM0RRk
+
+    I wanted to record the MIDI graphical output on Synthesia (a ?music playing
+    game? similar to Guitar Hero) while layering the output with some varying
+    background screenshots from the game itself (Synthesia only allows you to
+    put a fixed picture in background for the whole video).
+
+    So, I first recorded the Synthesia output, with blank (black) background,
+    then recorded a separate video with screenshots from the games, with
+    animations and transitions, and blended the two thanks to your guidelines.
+
+    It worked perfectly, although I spent several days to get used to the whole
+    process ?
+
+      + [8e5] t he ans weri saque stion? Says:
+        March 3, 2016 at 3:02 pm | Reply
+
+        glad it was useful to you!
+
+Leave a Reply Cancel reply
+
+Enter your comment here...
+[                    ]
+
+Fill in your details below or click an icon to log in:
+
+  *  
+  *  
+  *  
+  *  
+  * 
+
+Gravatar
+Email (required) (Address never made public)
+[                    ]
+Name (required)
+[                    ]
+Website
+[                    ]
+WordPress.com Logo
+
+You are commenting using your WordPress.com account. ( Log Out / Change )
+
+Twitter picture
+
+You are commenting using your Twitter account. ( Log Out / Change )
+
+Facebook photo
+
+You are commenting using your Facebook account. ( Log Out / Change )
+
+Google+ photo
+
+You are commenting using your Google+ account. ( Log Out / Change )
+
+Cancel
+
+Connecting to %s
+
+[ ] Notify me of new comments via email.
+
+[Post Comment] 
+
+-------------------------------------------------------------------------------
+
+Create a free website or blog at WordPress.com.
+Entries (RSS) and Comments (RSS).
+
+%d bloggers like this:
+
+[b]
+https://broadcasterproject.wordpress.com/2010/05/18/how-to-layerremix-videos-with-free-command-line-tools/

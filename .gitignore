@@ -1,0 +1,9 @@
+videos/*
+!videos/.gitkeep
+
+frames/*
+!frames/.gitkeep
+
+mixed/*
+!mixed/.gitkeep
+
