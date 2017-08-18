@@ -7,3 +7,6 @@ frames/*
 mixed/*
 !mixed/.gitkeep
 
+*.mp4
+*.mov
+

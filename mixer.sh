@@ -17,7 +17,7 @@ for f in $FRAMES_FOLDER/A_*.jpg; do # step through frames
 	let "counter+=1" # increment counter
 
 	# apply some Imagemagick effects to the 2 images and write a new image
-	composite -compose Overlay -gravity center $FRAMES_FOLDER/A_${counter:1}.jpg $FRAMES_FOLDER/B_${counter:1}.jpg $MIXED_FOLDER/AB_${counter:1}.jpg
+	composite -compose Multiply -gravity center $FRAMES_FOLDER/A_${counter:1}.jpg $FRAMES_FOLDER/B_${counter:1}.jpg $MIXED_FOLDER/AB_${counter:1}.jpg
 done
 
 # Use FFMPEG to make frames into a movie again
